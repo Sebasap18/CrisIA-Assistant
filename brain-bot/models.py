@@ -16,3 +16,15 @@ class Client(Base):
     model = Column(String(50), default="llama3")
     status = Column(String(20), default="ACTIVE")
     instant = Column(DateTime, default=datetime.utcnow)
+    history_type = Column(String(20))
+
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+    __table_args__ = {"schema": "core"}  # <--- CRUCIAL: Le dice a Python que busque en el esquema "core"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    client_id = Column(String(50), nullable=False)
+    session_id = Column(String(50), nullable=False)  # Para recordar el hilo de la conversación
+    role = Column(String(20), nullable=False)  # "user" o "assistant"
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)  # Para saber dónde se guarda esta interacción
