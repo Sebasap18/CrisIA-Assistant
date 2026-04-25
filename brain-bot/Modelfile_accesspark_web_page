@@ -1,5 +1,5 @@
 # 1. Elegimos nuestro motor base (que es ultraligero y rápido)
-FROM phi3
+FROM llama3.2
 
 # 2. Ajustamos los parámetros
 # Temperatura baja (0.1) para que sea preciso, corporativo y no invente datos

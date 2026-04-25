@@ -42,7 +42,7 @@ def procesar_pdf_cliente(ruta_pdf: str, client_id: str):
 
 if __name__ == "__main__":
     # Verificamos que el archivo exista antes de procesarlo
-    archivo_pdf = "PropuestaComercial.pdf"
+    archivo_pdf = "CONTEXT_ACCESS_WEB_V1.pdf"
     
     if os.path.exists(archivo_pdf):
         # Aquí asociamos este PDF al client_id que tenemos en PostgreSQL
