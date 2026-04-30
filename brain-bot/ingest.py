@@ -1,51 +1,85 @@
-# ingest.py
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
+# ingest_db_manual.py
 import os
+from sqlalchemy.orm import Session
 
-def procesar_pdf_cliente(ruta_pdf: str, client_id: str):
-    print(f"📚 1. Leyendo el archivo {ruta_pdf}...")
-    
-    # 1. Leer el PDF
-    loader = PyPDFLoader(ruta_pdf)
-    documentos = loader.load()
-    
-    print("✂️ 2. Partiendo el documento en párrafos pequeños...")
-    
-    # 2. Partir el texto en "Chunks" (pedacitos de 500 letras para que Ollama no se sature)
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500, 
-        chunk_overlap=50 # Un pequeño traslape para no cortar ideas por la mitad
-    )
-    chunks = text_splitter.split_documents(documentos)
-    
-    # 3. Etiquetar cada párrafo para saber a qué cliente pertenece
-    for chunk in chunks:
-        chunk.metadata["client_id"] = client_id
+# Importamos tu configuración de base de datos y modelos
+from database import SessionLocal
+import models
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+from langchain_ollama import OllamaEmbeddings
 
-    print("🧠 3. Generando vectores matemáticos con Ollama y guardando en ChromaDB...")
+def ingesta_desde_postgres():
+    CLIENT_ID = "accesspark_001"
     
-    # 4. Usar el modelo de Ollama que descargamos para convertir texto a números
-    # Asegúrate de que Ollama esté corriendo en otra terminal antes de ejecutar esto
-    embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    print(f"🔍 Conectando a PostgreSQL para buscar documentos del cliente: {CLIENT_ID}...")
+    db: Session = SessionLocal()
     
-    # 5. Guardar todo en una carpeta local llamada "chroma_db"
-    vectorstore = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        persist_directory="./chroma_db" # Aquí vivirá tu base de datos NoSQL
-    )
-    
-    print(f"✅ ¡Éxito! El conocimiento del cliente '{client_id}' ha sido inyectado en la base de datos.")
+    try:
+        # 1. Buscamos en la base de datos los documentos de este cliente
+        documentos_db = db.query(models.ContextDocument).filter(models.ContextDocument.client_id == CLIENT_ID).all()
+        
+        if not documentos_db:
+            print("❌ No se encontraron documentos en la base de datos para este cliente.")
+            return
+
+        print(f"Encontrados {len(documentos_db)} documentos en la BD. Iniciando procesamiento...\n")
+
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+        documentos_finales = []
+
+        # 2. Iteramos sobre lo que nos devolvió PostgreSQL
+        for doc in documentos_db:
+            ruta_archivo = doc.file_path
+            
+            # SQLAlchemy convierte automáticamente la columna JSONB a un diccionario de Python
+            etiquetas_db = doc.meta_data or {} 
+
+            if not os.path.exists(ruta_archivo):
+                print(f"⚠️ ERROR: El archivo físico '{ruta_archivo}' no existe en el disco duro. Saltando...")
+                continue
+
+            print(f"📄 Procesando: {doc.file_name} -> Ruta: {ruta_archivo} -> Etiquetas: {etiquetas_db}")
+            
+            # Cargamos y cortamos el texto
+            if ruta_archivo.lower().endswith('.pdf'):
+                loader = PyPDFLoader(ruta_archivo)
+            elif ruta_archivo.lower().endswith('.txt'):
+                loader = TextLoader(ruta_archivo, encoding="utf-8")
+            else:
+                print(f"⚠️ Formato no soportado para {ruta_archivo}. Solo .pdf o .txt")
+                continue
+                
+            docs_brutos = loader.load()
+            chunks = text_splitter.split_documents(docs_brutos)
+
+            # 3. Inyectamos la metadata (Client ID + Etiquetas de la DB)
+            for chunk in chunks:
+                chunk.metadata = {
+                    "client_id": CLIENT_ID,
+                    **etiquetas_db  # Esto desempaqueta el JSON {"departamento": "comercial"}
+                }
+                documentos_finales.append(chunk)
+
+        if not documentos_finales:
+            print("\n❌ No se pudo procesar ningún texto válido.")
+            return
+
+        # 4. Guardar en ChromaDB
+        print(f"\n🧠 Guardando {len(documentos_finales)} fragmentos en ChromaDB...")
+        Chroma.from_documents(
+            documents=documentos_finales,
+            embedding=embeddings,
+            persist_directory="./chroma_db"
+        )
+        print("✅ ¡Base de datos vectorial actualizada con éxito desde PostgreSQL!")
+        
+    except Exception as e:
+        print(f"🚨 Ocurrió un error: {e}")
+    finally:
+        db.close() # Siempre cerramos la conexión a la BD
 
 if __name__ == "__main__":
-    # Verificamos que el archivo exista antes de procesarlo
-    archivo_pdf = "CONTEXT_ACCESS_WEB_V1.pdf"
-    
-    if os.path.exists(archivo_pdf):
-        # Aquí asociamos este PDF al client_id que tenemos en PostgreSQL
-        procesar_pdf_cliente(archivo_pdf, "accesspark_001")
-    else:
-        print(f"❌ Error: No se encontró el archivo '{archivo_pdf}'. Por favor pon un PDF de prueba en la carpeta.")
+    ingesta_desde_postgres()

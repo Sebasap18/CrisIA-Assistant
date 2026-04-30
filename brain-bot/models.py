@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Text, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 import uuid
 from datetime import datetime
 from database import Base
@@ -27,4 +27,16 @@ class ChatHistory(Base):
     session_id = Column(String(50), nullable=False)  # Para recordar el hilo de la conversación
     role = Column(String(20), nullable=False)  # "user" o "assistant"
     content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)  # Para saber dónde se guarda esta interacción
+    instant = Column(DateTime, default=datetime.utcnow)  # Para saber dónde se guarda esta interacción
+
+
+class ContextDocument(Base):
+    __tablename__ = "context_document"
+    __table_args__ = {"schema": "core"}  # <--- CRUCIAL: Le dice a Python que busque en el esquema "core"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    client_id = Column(String(50), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_path = Column(Text, nullable=False)
+    meta_data = Column(JSONB)  # Para guardar cualquier información adicional sobre el documento
+    instant = Column(DateTime, default=datetime.utcnow)
