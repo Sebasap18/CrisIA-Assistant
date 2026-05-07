@@ -1,0 +1,29 @@
+# .gitignore para OmniMind Brain-Bot
+
+# Variables de entorno — NUNCA subir al repo
+.env
+
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# ChromaDB (base de datos vectorial local — puede ser grande)
+chroma_db/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db

@@ -76,11 +76,9 @@ export class AccessParkBot extends LitElement {
   }
 
   // --- NUEVA LÓGICA: GENERACIÓN DE SESSION ID ---
-  // Genera un ID único temporal y lo guarda en el navegador del usuario
   private getSessionId(): string {
     let sessionId = sessionStorage.getItem('chat_session_id');
     if (!sessionId) {
-      // Crea un ID aleatorio (ej. sess_1a2b3c4d)
       sessionId = 'sess_' + Math.random().toString(36).substring(2, 15);
       sessionStorage.setItem('chat_session_id', sessionId);
     }
@@ -131,15 +129,11 @@ export class AccessParkBot extends LitElement {
   private async sendMessage(textToSend: string = this.inputText): Promise<void> {
     if (!textToSend.trim()) return;
 
-    // 1. Agregamos el mensaje del usuario a la pantalla
     this.messages = [...this.messages, { sender: 'user', text: textToSend }];
     this.inputText = ''; 
-    
-    // 2. Encendemos el indicador de escritura
     this.isTyping = true;
     
     try {
-      // 3. Nos conectamos a FastAPI enviando el Client ID y el Session ID
       const response = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: {
@@ -147,7 +141,7 @@ export class AccessParkBot extends LitElement {
         },
         body: JSON.stringify({
           client_id: this.clientId, 
-          session_id: this.getSessionId(), // <-- AQUÍ SE ENVÍA EL ID A REDIS
+          session_id: this.getSessionId(), 
           text: textToSend
         })
       });
@@ -158,7 +152,6 @@ export class AccessParkBot extends LitElement {
 
       const data = await response.json();
 
-      // 4. Mostramos la respuesta de la IA
       this.messages = [...this.messages, {
         sender: 'bot',
         text: data.response
@@ -171,7 +164,6 @@ export class AccessParkBot extends LitElement {
         text: 'Lo siento, mis sistemas están desconectados en este momento. Por favor intenta más tarde.'
       }];
     } finally {
-      // 5. Apagamos el indicador de escritura
       this.isTyping = false;
     }
   }
@@ -231,9 +223,9 @@ export class AccessParkBot extends LitElement {
             
             ${this.messages.length === 1 && !this.isTyping ? html`
               <div class="options-container">
-                <button class="option-btn" @click=${() => this.sendOption('hola deseo Comprar/Productos')}>Comprar/Productos</button>
-                <button class="option-btn" @click=${() => this.sendOption('hola deseo Trabajar con accesspark')}>Trabajar con nosotros</button>
-                <button class="option-btn" @click=${() => this.sendOption('hola deseo recibir Soporte Técnico')}>Soporte Técnico</button>
+                <button class="option-btn" @click=${() => this.sendOption('Quiero ver el catálogo de productos y precios')}>Comprar/Productos</button>
+                <button class="option-btn" @click=${() => this.sendOption('Quiero conocer las vacantes o trabajar con ustedes')}>Trabajar con nosotros</button>
+                <button class="option-btn" @click=${() => this.sendOption('Tengo una falla y necesito soporte técnico')}>Soporte Técnico</button>
               </div>
             ` : ''}
           </div>
