@@ -41,8 +41,12 @@ class OllamaClassifierService:
     """
 
     def __init__(self) -> None:
+        """
+        Inicializa el servicio clasificador con la configuración de Ollama.
+        """
         self._base_url = settings.OLLAMA_BASE_URL
         self._timeout = settings.OLLAMA_CLASSIFIER_TIMEOUT
+
 
     async def classify(self, text: str, model: str) -> str:
         """
@@ -78,12 +82,14 @@ class OllamaClassifierService:
                         logger.info("Intención detectada: '%s'", category)
                         return category
 
-                logger.info("Intención detectada: 'general' (fallback)")
+                logger.info("Intención detectada: 'general' (fallback). Respuesta cruda: '%s'", raw)
                 return "general"
 
+
             except Exception as exc:
-                logger.warning("Error en clasificador, usando 'general': %s", exc)
+                logger.error("Error crítico en clasificador (modelo='%s'): %s", model, exc, exc_info=True)
                 return "general"
+
 
 
 # Verificación estática de que cumple el protocolo IClassifierService

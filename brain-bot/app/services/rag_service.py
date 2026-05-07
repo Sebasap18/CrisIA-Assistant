@@ -26,9 +26,13 @@ class ChromaRAGService:
     """
 
     def __init__(self) -> None:
+        """
+        Inicializa el servicio RAG con la configuración de ChromaDB y Ollama.
+        """
         self._embed_model = settings.OLLAMA_EMBED_MODEL
         self._chroma_path = settings.CHROMA_PATH
         self._top_k = settings.RAG_TOP_K
+
 
     def search(self, query: str, client_id: str, department: str) -> str:
         """
@@ -77,13 +81,19 @@ class ChromaRAGService:
                 filter=search_filter,
             )
 
+            if not results:
+                logger.warning("RAG: No se encontraron fragmentos relevantes para query='%s' y filtro=%s", 
+                               query, search_filter)
+                return ""
+
             context = "\n\n".join(doc.page_content for doc in results)
-            logger.debug("RAG: encontrados %d fragmentos", len(results))
+            logger.debug("RAG: encontrados %d fragmentos relevantes", len(results))
             return context
 
         except Exception as exc:
-            logger.error("Error leyendo ChromaDB: %s", exc)
+            logger.exception("Error crítico leyendo ChromaDB: %s", exc)
             return ""
+
 
 
 # Verificación estática de que cumple el protocolo IRAGService

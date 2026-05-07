@@ -23,8 +23,12 @@ class OllamaLLMService:
     """
 
     def __init__(self) -> None:
+        """
+        Inicializa el servicio LLM con la configuración de Ollama.
+        """
         self._base_url = settings.OLLAMA_BASE_URL
         self._timeout = settings.OLLAMA_TIMEOUT
+
 
     async def generate(self, messages: list[dict], model: str) -> str:
         """
@@ -56,24 +60,27 @@ class OllamaLLMService:
                 return content
 
             except httpx.TimeoutException:
-                logger.error("Timeout al conectar con Ollama (modelo='%s')", model)
+                logger.error("Timeout al conectar con Ollama (modelo='%s') después de %s segundos", 
+                             model, self._timeout)
                 return (
                     "Lo siento, el tiempo de respuesta de la IA superó el límite. "
                     "Por favor intenta de nuevo."
                 )
             except httpx.HTTPStatusError as exc:
                 logger.error(
-                    "Error HTTP de Ollama: status=%d, detail=%s",
+                    "Error HTTP de Ollama: status=%d, detail=%s, model=%s",
                     exc.response.status_code,
                     exc.response.text,
+                    model
                 )
                 return "Lo siento, el servicio de IA retornó un error. Intenta más tarde."
             except Exception as exc:
-                logger.error("Error inesperado en OllamaLLMService: %s", exc)
+                logger.exception("Error inesperado en OllamaLLMService (modelo='%s'): %s", model, exc)
                 return (
                     "Lo siento, mis sistemas están desconectados en este momento. "
                     "Por favor intenta más tarde."
                 )
+
 
 
 # Verificación estática de que cumple el protocolo ILLMService

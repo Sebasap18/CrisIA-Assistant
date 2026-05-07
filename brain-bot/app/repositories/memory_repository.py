@@ -29,7 +29,14 @@ class RedisMemoryRepository:
     """
 
     def __init__(self, redis_client: redis.Redis) -> None:
+        """
+        Inicializa el repositorio de memoria en Redis.
+
+        Args:
+            redis_client: Cliente de Redis ya configurado.
+        """
         self._redis = redis_client
+
 
     def _build_key(self, client_id: str, session_id: str) -> str:
         """Genera la clave Redis única para la sesión."""
@@ -41,8 +48,13 @@ class RedisMemoryRepository:
         """
         key = self._build_key(client_id, session_id)
         logger.debug("Cargando historial Redis con clave '%s'", key)
-        data = self._redis.get(key)
-        return json.loads(data) if data else []
+        try:
+            data = self._redis.get(key)
+            return json.loads(data) if data else []
+        except Exception as exc:
+            logger.error("Error cargando historial de Redis para clave '%s': %s", key, exc)
+            return []
+
 
     def save_history(
         self,
@@ -65,12 +77,16 @@ class RedisMemoryRepository:
         max_messages = settings.HISTORY_MAX_TURNS
         historial = historial[-max_messages:]
 
-        logger.debug(
-            "Guardando historial Redis con clave '%s' (%d mensajes)",
-            key,
-            len(historial),
-        )
-        self._redis.set(key, json.dumps(historial), ex=_REDIS_TTL_SECONDS)
+        try:
+            logger.debug(
+                "Guardando historial Redis con clave '%s' (%d mensajes)",
+                key,
+                len(historial),
+            )
+            self._redis.set(key, json.dumps(historial), ex=_REDIS_TTL_SECONDS)
+        except Exception as exc:
+            logger.error("Error persistiendo historial en Redis para clave '%s': %s", key, exc)
+
 
 
 # --- Fábrica del cliente Redis (singleton) ---

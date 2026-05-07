@@ -44,10 +44,20 @@ class ChatService:
         classifier: IClassifierService,
         memory: IMemoryRepository,
     ) -> None:
+        """
+        Inicializa el orquestador de chat con sus dependencias.
+
+        Args:
+            llm: Servicio generador de texto (LLM).
+            rag: Servicio de recuperación de contexto (RAG).
+            classifier: Servicio de clasificación de intenciones.
+            memory: Repositorio para la gestión del historial de chat.
+        """
         self._llm = llm
         self._rag = rag
         self._classifier = classifier
         self._memory = memory
+
 
     async def handle_message(
         self,
@@ -64,64 +74,79 @@ class ChatService:
         Returns:
             ChatResponse con el texto generado por el LLM.
         """
-        # ── 1. Cargar historial de la sesión ─────────────────────────────────
-        historial = self._memory.load_history(
-            client_id=request.client_id,
-            session_id=request.session_id,
-        )
-        logger.debug("Historial cargado: %d mensajes previos", len(historial))
+        try:
+            logger.info("Iniciando procesamiento de mensaje para client_id='%s', session_id='%s'", 
+                        request.client_id, request.session_id)
 
-        # ── 2. Clasificar la intención del usuario ────────────────────────────
-        department = await self._classifier.classify(
-            text=request.text,
-            model=client.model,
-        )
-        logger.info(
-            "Intención '%s' detectada para client='%s'",
-            department,
-            request.client_id,
-        )
+            # ── 1. Cargar historial de la sesión ─────────────────────────────────
+            historial = self._memory.load_history(
+                client_id=request.client_id,
+                session_id=request.session_id,
+            )
+            logger.debug("Historial cargado: %d mensajes previos", len(historial))
 
-        # ── 3. Buscar contexto relevante en ChromaDB (RAG) ────────────────────
-        rag_context = self._rag.search(
-            query=request.text,
-            client_id=request.client_id,
-            department=department,
-        )
-        logger.debug("Contexto RAG recuperado (%d chars)", len(rag_context))
+            # ── 2. Clasificar la intención del usuario ────────────────────────────
+            department = await self._classifier.classify(
+                text=request.text,
+                model=client.model,
+            )
+            logger.info(
+                "Intención '%s' detectada para client='%s'",
+                department,
+                request.client_id,
+            )
 
-        # ── 4. Construir el paquete de mensajes enriquecido ───────────────────
-        # El system prompt personalizado del cliente va primero
-        system_message = {"role": "system", "content": client.system_prompt}
+            # ── 3. Buscar contexto relevante en ChromaDB (RAG) ────────────────────
+            rag_context = self._rag.search(
+                query=request.text,
+                client_id=request.client_id,
+                department=department,
+            )
+            logger.debug("Contexto RAG recuperado (%d chars)", len(rag_context))
 
-        # Enriquecer el texto del usuario con el contexto RAG
-        user_content = (
-            f"INFORMACIÓN DEL MANUAL (úsala si es relevante):\n{rag_context}\n\n"
-            f"PREGUNTA DEL USUARIO:\n{request.text}"
-            if rag_context
-            else request.text
-        )
-        user_message = {"role": "user", "content": user_content}
+            # ── 4. Construir el paquete de mensajes enriquecido ───────────────────
+            # El system prompt personalizado del cliente va primero
+            system_message = {"role": "system", "content": client.system_prompt}
 
-        messages_for_llm = [system_message] + historial + [user_message]
+            # Enriquecer el texto del usuario con el contexto RAG
+            user_content = (
+                f"INFORMACIÓN DEL MANUAL (úsala si es relevante):\n{rag_context}\n\n"
+                f"PREGUNTA DEL USUARIO:\n{request.text}"
+                if rag_context
+                else request.text
+            )
+            user_message = {"role": "user", "content": user_content}
 
-        # ── 5. Generar la respuesta con el LLM ───────────────────────────────
-        response_text = await self._llm.generate(
-            messages=messages_for_llm,
-            model=client.model,
-        )
-        logger.info(
-            "Respuesta generada para client='%s' (%d chars)",
-            request.client_id,
-            len(response_text),
-        )
+            messages_for_llm = [system_message] + historial + [user_message]
+            logger.debug("Paquete de mensajes construido con %d elementos totales", len(messages_for_llm))
 
-        # ── 6. Persistir la nueva interacción ─────────────────────────────────
-        self._memory.save_history(
-            client_id=request.client_id,
-            session_id=request.session_id,
-            user_text=request.text,
-            assistant_text=response_text,
-        )
+            # ── 5. Generar la respuesta con el LLM ───────────────────────────────
+            response_text = await self._llm.generate(
+                messages=messages_for_llm,
+                model=client.model,
+            )
+            logger.info(
+                "Respuesta generada con éxito para client='%s' (%d chars)",
+                request.client_id,
+                len(response_text),
+            )
 
-        return ChatResponse(response=response_text)
+            # ── 6. Persistir la nueva interacción ─────────────────────────────────
+            self._memory.save_history(
+                client_id=request.client_id,
+                session_id=request.session_id,
+                user_text=request.text,
+                assistant_text=response_text,
+            )
+            logger.debug("Interacción persistida en memoria correctamente")
+
+            return ChatResponse(response=response_text)
+
+        except Exception as exc:
+            logger.exception("Error inesperado procesando mensaje para client_id='%s': %s", 
+                             request.client_id, exc)
+            # Retornar una respuesta de error amigable en lugar de dejar que FastAPI lance un 500 sin control
+            return ChatResponse(
+                response="Lo siento, ha ocurrido un error interno al procesar tu solicitud. Por favor, intenta de nuevo más tarde."
+            )
+

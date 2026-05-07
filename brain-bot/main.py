@@ -40,5 +40,13 @@ app.include_router(chat_router)
 
 @app.get("/health", tags=["Health"])
 def health_check() -> dict:
-    """Endpoint de salud para verificar que el servidor está activo."""
+    """
+    Endpoint de salud para monitoreo del sistema.
+    
+    Permite verificar que el servidor FastAPI está en ejecución y respondiendo
+    correctamente a las peticiones HTTP.
+    
+    Returns:
+        Un diccionario indicando el estado ('ok') y el nombre del servicio.
+    """
     return {"status": "ok", "service": "brain-bot"}

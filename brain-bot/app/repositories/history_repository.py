@@ -22,7 +22,14 @@ class PostgresHistoryRepository:
     """
 
     def __init__(self, db: Session) -> None:
+        """
+        Inicializa el repositorio de historial en PostgreSQL.
+
+        Args:
+            db: Sesión de SQLAlchemy para interactuar con la base de datos.
+        """
         self._db = db
+
 
     def load_history(self, client_id: str, session_id: str) -> list[dict]:
         """
@@ -80,6 +87,8 @@ class PostgresHistoryRepository:
         )
         self._db.add_all([user_msg, assistant_msg])
         self._db.commit()
+        logger.debug("Historial PostgreSQL persistido con éxito para session_id='%s'", session_id)
+
 
 
 # Verificación estática de que cumple el protocolo IMemoryRepository

@@ -21,7 +21,14 @@ class ClientRepository:
     """
 
     def __init__(self, db: Session) -> None:
+        """
+        Inicializa el repositorio de clientes.
+
+        Args:
+            db: Sesión de SQLAlchemy para interactuar con la base de datos.
+        """
         self._db = db
+
 
     def get_by_client_id(self, client_id: str) -> Client | None:
         """

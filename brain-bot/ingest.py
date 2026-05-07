@@ -10,10 +10,23 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
+
 def ingesta_desde_postgres():
+    """
+    Realiza la ingesta manual de documentos desde PostgreSQL a ChromaDB.
+    
+    Busca documentos asociados a un CLIENT_ID específico en la base de datos,
+    los procesa (PDF o TXT), fragmenta el texto y los indexa en el vectorstore
+    ChromaDB con sus metadatos correspondientes.
+    """
+
     CLIENT_ID = "accesspark_001"
     
-    print(f"🔍 Conectando a PostgreSQL para buscar documentos del cliente: {CLIENT_ID}...")
+    logger.info("Conectando a PostgreSQL para buscar documentos del cliente: %s...", CLIENT_ID)
     db: Session = SessionLocal()
     
     try:
@@ -21,10 +34,11 @@ def ingesta_desde_postgres():
         documentos_db = db.query(models.ContextDocument).filter(models.ContextDocument.client_id == CLIENT_ID).all()
         
         if not documentos_db:
-            print("❌ No se encontraron documentos en la base de datos para este cliente.")
+            logger.warning("No se encontraron documentos en la base de datos para este cliente.")
             return
 
-        print(f"Encontrados {len(documentos_db)} documentos en la BD. Iniciando procesamiento...\n")
+        logger.info("Encontrados %d documentos en la BD. Iniciando procesamiento...", len(documentos_db))
+
 
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
@@ -38,10 +52,11 @@ def ingesta_desde_postgres():
             etiquetas_db = doc.meta_data or {} 
 
             if not os.path.exists(ruta_archivo):
-                print(f"⚠️ ERROR: El archivo físico '{ruta_archivo}' no existe en el disco duro. Saltando...")
+                logger.error("El archivo físico '%s' no existe en el disco duro. Saltando...", ruta_archivo)
                 continue
 
-            print(f"📄 Procesando: {doc.file_name} -> Ruta: {ruta_archivo} -> Etiquetas: {etiquetas_db}")
+            logger.info("Procesando: %s -> Ruta: %s -> Etiquetas: %s", doc.file_name, ruta_archivo, etiquetas_db)
+
             
             # Cargamos y cortamos el texto
             if ruta_archivo.lower().endswith('.pdf'):
@@ -49,8 +64,9 @@ def ingesta_desde_postgres():
             elif ruta_archivo.lower().endswith('.txt'):
                 loader = TextLoader(ruta_archivo, encoding="utf-8")
             else:
-                print(f"⚠️ Formato no soportado para {ruta_archivo}. Solo .pdf o .txt")
+                logger.warning("Formato no soportado para %s. Solo .pdf o .txt", ruta_archivo)
                 continue
+
                 
             docs_brutos = loader.load()
             chunks = text_splitter.split_documents(docs_brutos)
@@ -64,20 +80,23 @@ def ingesta_desde_postgres():
                 documentos_finales.append(chunk)
 
         if not documentos_finales:
-            print("\n❌ No se pudo procesar ningún texto válido.")
+            logger.error("No se pudo procesar ningún texto válido.")
             return
 
+
         # 4. Guardar en ChromaDB
-        print(f"\n🧠 Guardando {len(documentos_finales)} fragmentos en ChromaDB...")
+        logger.info("Guardando %d fragmentos en ChromaDB...", len(documentos_finales))
         Chroma.from_documents(
             documents=documentos_finales,
             embedding=embeddings,
             persist_directory="./chroma_db"
         )
-        print("✅ ¡Base de datos vectorial actualizada con éxito desde PostgreSQL!")
+        logger.info("¡Base de datos vectorial actualizada con éxito desde PostgreSQL!")
+
         
     except Exception as e:
-        print(f"🚨 Ocurrió un error: {e}")
+        logger.exception("Ocurrió un error crítico durante la ingesta: %s", e)
+
     finally:
         db.close() # Siempre cerramos la conexión a la BD
 
