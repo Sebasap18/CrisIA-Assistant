@@ -27,6 +27,12 @@ class Client(Base):
     model = Column(String(50), default="llama3", nullable=False)
     status = Column(String(20), default="ACTIVE", nullable=False)
     history_type = Column(String(20), nullable=False)  # 'POSTGRES' | 'REDIS'
+    
+    # --- Configuración dinámica del clasificador de intenciones ---
+    classifier_prompt = Column(Text, nullable=True)
+    classifier_categories = Column(JSONB, nullable=True)
+    classifier_fallback = Column(String(50), nullable=True)
+    
     instant = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def is_active(self) -> bool:

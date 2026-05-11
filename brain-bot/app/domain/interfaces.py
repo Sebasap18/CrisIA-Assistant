@@ -74,9 +74,15 @@ class IClassifierService(Protocol):
     Contrato para el agente clasificador de intenciones.
     """
 
-    async def classify(self, text: str, model: str) -> str:
+    async def classify(
+        self, 
+        text: str, 
+        model: str, 
+        prompt_template: str, 
+        valid_categories: set[str], 
+        fallback_category: str
+    ) -> str:
         """
-        Clasifica el texto del usuario en una categoría de departamento.
-        Retorna: 'sales' | 'support' | 'human_talent' | 'general'
+        Clasifica el texto del usuario en una categoría basándose en la configuración dinámica.
         """
         ...

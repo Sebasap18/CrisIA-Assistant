@@ -86,9 +86,31 @@ class ChatService:
             logger.debug("Historial cargado: %d mensajes previos", len(historial))
 
             # ── 2. Clasificar la intención del usuario ────────────────────────────
+            # Si client.classifier_categories es una lista, convertir a set. Si es un string (JSON mal parseado), manejarlo.
+            # Asumimos que SQLAlchemy JSONB retorna una lista de strings.
+            raw_categories = client.classifier_categories
+            if isinstance(raw_categories, list):
+                valid_categories = set(raw_categories)
+            else:
+                valid_categories = {"sales", "support", "human_talent", "general"}
+                
+            # Valores por defecto para mantener retrocompatibilidad si la BD aún no está actualizada
+            default_prompt = (
+                "Actúa como un enrutador inteligente para AccessPark.\n"
+                f"Analiza el siguiente mensaje y clasifícalo ESTRICTAMENTE en UNA de estas categorías: {', '.join(valid_categories)}.\n"
+                "Responde ÚNICAMENTE con la palabra exacta de la categoría.\n"
+                "Mensaje del usuario: \"{message}\""
+            )
+            prompt_template = client.classifier_prompt or default_prompt
+                
+            fallback_category = client.classifier_fallback or "general"
+
             department = await self._classifier.classify(
                 text=request.text,
                 model=client.model,
+                prompt_template=prompt_template,
+                valid_categories=valid_categories,
+                fallback_category=fallback_category
             )
             logger.info(
                 "Intención '%s' detectada para client='%s'",
