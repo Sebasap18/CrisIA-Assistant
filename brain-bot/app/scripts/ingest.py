@@ -17,10 +17,14 @@ El CLIENT_ID ya no está hardcodeado — se configura via:
 import argparse
 import os
 import sys
+from pathlib import Path
+
+# Raíz del proyecto: app/scripts/ -> app/ -> brain-bot/
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Asegurar que el directorio raíz del proyecto está en el path
 # para que las importaciones de 'app.*' funcionen correctamente
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+sys.path.insert(0, str(_PROJECT_ROOT))
 
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_community.vectorstores import Chroma
@@ -36,8 +40,8 @@ from app.domain.models import ContextDocument
 logger = get_logger(__name__)
 
 # Configuración del splitter de texto
-_CHUNK_SIZE = 800
-_CHUNK_OVERLAP = 100
+_CHUNK_SIZE = 2000
+_CHUNK_OVERLAP = 200
 
 # Extensiones de archivo soportadas
 _SUPPORTED_EXTENSIONS = {".pdf", ".txt"}
@@ -116,20 +120,29 @@ def ingest_for_client(client_id: str) -> None:
 
         # ── 3. Procesar cada documento ────────────────────────────────────────
         for doc in documentos_db:
-            if not os.path.exists(doc.file_path):
+            # Resolver ruta relativa desde la raíz del proyecto
+            file_path = Path(doc.file_path)
+            if not file_path.is_absolute():
+                file_path = _PROJECT_ROOT / file_path
+
+            if not file_path.exists():
                 logger.warning(
-                    "Archivo físico no encontrado en disco: '%s'. Saltando.", doc.file_path
+                    "Archivo físico no encontrado en disco: '%s'. Saltando.", file_path
                 )
                 continue
 
             logger.info("Procesando: '%s'", doc.file_name)
-            loader = _load_document(doc.file_path)
+            loader = _load_document(str(file_path))
             if loader is None:
                 continue
 
             raw_docs = loader.load()
             chunks = splitter.split_documents(raw_docs)
             etiquetas = doc.meta_data or {}
+            
+            # Si el documento no tiene la etiqueta 'deals', asignarla a 'general' por defecto
+            if "deals" not in etiquetas:
+                etiquetas["deals"] = "general"
 
             # Inyectar metadatos a cada fragmento
             for chunk in chunks:

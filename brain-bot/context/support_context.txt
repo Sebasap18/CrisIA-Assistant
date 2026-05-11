@@ -1,0 +1,19 @@
+Contexto de Información de Soporte Técnico, Mantenimiento Preventivo y Solución de Fallas de AccessPark. El correo de escalamiento técnico es directortecnico@accesspark.co.
+
+Soporte Técnico AccessPark para Primeros Auxilios en Cajeros 2030QR/TJ:
+Para Problemas de Lectura QR en cajeros AccessPark, se debe verificar que el tiquete esté a menos de 6 cm del lector y no esté doblado. Confirmar que las luces laterales del escáner láser estén encendidas.
+Para Falla de Tarjeta Mifare en cajeros AccessPark, si no hay lectura, abrir el cajero y presionar el botón "Reset" en la tarjeta controladora ParkLine durante 2 segundos.
+Para la falla de Aplicación Bloqueada ("Procesando") en cajeros AccessPark, se debe abrir el Administrador de Tareas presionando (CTRL+ALT+SUPR), finalizar el proceso "SmartPay.exe" y reiniciar la aplicación desde el escritorio de Windows.
+Para solucionar Atascos de Billetes (Bill to Bill 300) en cajeros AccessPark, liberar la pestaña metálica inferior para retirar el validador. Abrir las guías del cabezal para retirar el billete. Si persiste, retirar el chasis usando las palancas azules y revisar el "Path Switch" (enrutador).
+Para solucionar Atascos de Monedas (Hoppers) en cajeros AccessPark, se debe desmontar el Hopper presionando las pestañas (A) hacia abajo. Limpiar cuerpos extraños del canal de salida. No superar la capacidad de 600 monedas por denominación.
+
+Mantenimiento Preventivo de Hardware AccessPark:
+El Mantenimiento de la Caja Android / Kiosco de AccessPark requiere limpiar la pantalla táctil cada 15 días con microfibra y alcohol isopropílico. Mensualmente limpiar el cabezal térmico de la impresora con un hisopo. Trimestralmente validar voltajes de la fuente (5V/12V con margen +/- 5%).
+El Mantenimiento de Cámaras LPR e Inventario de AccessPark requiere limpieza mensual de lentes y cúpulas con limpiador óptico. Verificar voltaje de entrada (12V DC o PoE 48V) y conectividad al NVR.
+El Mantenimiento de CPU y Servidores AccessPark se hace trimestralmente con aire comprimido. Es de uso obligatorio la pulsera antiestática al manipular la tarjeta madre o RAM. Se debe realizar el cambio de pasta térmica según desgaste.
+
+Soporte de Configuración Técnica Gaston Web de AccessPark:
+Para configurar Controladoras en Gaston Web AccessPark, el canal 1 debe estar como "Cliente", usar el puerto 6003 y velocidad de 115200 bps.
+Para configurar Cámaras LPR Vivotek en Gaston Web AccessPark, seleccionar integración "Por puerto" con usuario admin y clave 901215958ap.
+Para configurar Cámaras LPR Hikvision en Gaston Web AccessPark, seleccionar integración "Por API" con puertos de entrada y salida en 0.
+Escalamiento de Soporte Técnico AccessPark: Para fallas críticas de sistema, bloqueos de base de datos o daños físicos irreversibles en el parqueadero, el cliente debe contactar inmediatamente a soporte al correo directortecnico@accesspark.co.

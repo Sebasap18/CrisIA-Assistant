@@ -4,7 +4,13 @@ Configuración centralizada del proyecto usando pydantic-settings.
 Todas las variables sensibles se leen desde el archivo .env,
 nunca se hardcodean en el código fuente.
 """
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Raíz del proyecto: dos niveles arriba de este archivo (app/core/ -> app/ -> brain-bot/)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_ENV_FILE = _PROJECT_ROOT / ".env"
 
 
 class Settings(BaseSettings):
@@ -39,7 +45,7 @@ class Settings(BaseSettings):
     INGEST_CLIENT_ID: str = "accesspark_001"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",

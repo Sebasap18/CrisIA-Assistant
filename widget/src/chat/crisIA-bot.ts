@@ -2,6 +2,7 @@ import { LitElement, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import widgetStyles from '../styles/stylesChat.css?inline';
+import defaultLogoUrl from '../static/logo.ico?url';
 
 // 1. INTERFACES (Seguridad de tipos)
 interface ChatMessage {
@@ -23,27 +24,39 @@ export class AccessParkBot extends LitElement {
   @property({ type: String, attribute: 'font-family' })
   fontFamily: string = 'Segoe UI, sans-serif';
 
+  @property({ type: String, attribute: 'icon-src' })
+  iconSrc: string = defaultLogoUrl;
+
+  @property({ type: String, attribute: 'bot-name' })
+  botName: string = 'CrisIA';
+
   // 4. DEFINICIÓN DE ESTADOS INTERNOS (Privados)
   @state()
   private isOpen: boolean = false;
 
   @state()
   private messages: ChatMessage[] = [
-    { sender: 'bot', text: '¡Hola! Bienvenido. ¿En qué te puedo ayudar hoy?' }
+    { sender: 'bot', text: '\u00A1Hola! Bienvenido. soy CrisIA. \u00BFEn qu\u00E9 te puedo ayudar hoy?' }
   ];
 
   @state()
   private inputText: string = '';
 
   // --- VARIABLES PARA EL ARRASTRE ---
-  @state() private translateX: number = 0; 
-  @state() private translateY: number = 0; 
-  @state() private isTyping: boolean = false; 
+  @state() private translateX: number = 0;
+  @state() private translateY: number = 0;
+  @state()
+  private isTyping: boolean = false;
+
+  @state()
+  private isCompact: boolean = false;
 
   // Variables de control interno
   private isDragging: boolean = false;
   private initialX: number = 0;
   private initialY: number = 0;
+  private startX: number = 0;
+  private startY: number = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -60,13 +73,20 @@ export class AccessParkBot extends LitElement {
   };
 
   private clampPosition(): void {
+    const pillSize = this.isCompact ? 56 : 260; // Ancho aproximado de la pill o el círculo
     const chatWidth = this.isOpen ? Math.min(350, window.innerWidth - 40) : 0;
     const chatHeight = this.isOpen ? Math.min(500, window.innerHeight - 120) : 0;
 
     const maxRightDrag = 0;
     const maxDownDrag = 0;
-    const maxLeftDrag = -(window.innerWidth - Math.max(60, chatWidth) - 40);
-    const maxUpDrag = -(window.innerHeight - Math.max(60, chatHeight) - 90);
+    
+    // Calculamos el límite izquierdo basándonos en el ancho actual (pill o ventana de chat)
+    const currentWidth = Math.max(pillSize, chatWidth);
+    const maxLeftDrag = -(window.innerWidth - currentWidth - 40);
+    
+    // Calculamos el límite superior
+    const currentHeight = this.isOpen ? Math.max(72, chatHeight) : (this.isCompact ? 56 : 72);
+    const maxUpDrag = -(window.innerHeight - currentHeight - 90);
 
     const effectiveMaxLeft = Math.min(maxLeftDrag, 0);
     const effectiveMaxUp = Math.min(maxUpDrag, 0);
@@ -90,10 +110,15 @@ export class AccessParkBot extends LitElement {
 
   // --- LÓGICA DE ARRASTRE ---
   private dragStart(e: PointerEvent): void {
+    this.startX = e.clientX;
+    this.startY = e.clientY;
     this.initialX = e.clientX - this.translateX;
     this.initialY = e.clientY - this.translateY;
     this.isDragging = true;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    
+    // Capturamos el puntero para asegurar que el rastro no se pierda
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
   }
 
   private drag(e: PointerEvent): void {
@@ -106,17 +131,37 @@ export class AccessParkBot extends LitElement {
 
   private dragEnd(e: PointerEvent): void {
     this.isDragging = false;
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
   }
 
   // 6. LÓGICA DEL COMPONENTE
-  private toggleChat(): void {
-    this.isOpen = !this.isOpen;
+  private toggleChat(e?: Event): void {
+    if (e && e.type === 'click') {
+      const mouseEvent = e as MouseEvent;
+      const dx = mouseEvent.clientX - this.startX;
+      const dy = mouseEvent.clientY - this.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 5) return;
+    }
+
+    if (this.isCompact) {
+      this.isCompact = false;
+    } else {
+      this.isOpen = !this.isOpen;
+    }
+    this.clampPosition();
+  }
+
+  private toggleMinimize(e: Event): void {
+    e.stopPropagation();
+    // Al minimizar, vamos directo al modo logo (compacto) y cerramos la ventana de chat
+    this.isOpen = false;
+    this.isCompact = true;
     this.clampPosition();
   }
 
   private handleInput(e: Event): void {
-    const input = e.target as HTMLInputElement; 
+    const input = e.target as HTMLInputElement;
     this.inputText = input.value;
   }
 
@@ -130,9 +175,9 @@ export class AccessParkBot extends LitElement {
     if (!textToSend.trim()) return;
 
     this.messages = [...this.messages, { sender: 'user', text: textToSend }];
-    this.inputText = ''; 
+    this.inputText = '';
     this.isTyping = true;
-    
+
     try {
       const response = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
@@ -140,8 +185,8 @@ export class AccessParkBot extends LitElement {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          client_id: this.clientId, 
-          session_id: this.getSessionId(), 
+          client_id: this.clientId,
+          session_id: this.getSessionId(),
           text: textToSend
         })
       });
@@ -180,68 +225,81 @@ export class AccessParkBot extends LitElement {
           --bot-theme-color: ${this.themeColor};
           --bot-font-family: ${this.fontFamily};
         }
-        .launcher, .header { cursor: grab; }
-        .launcher:active, .header:active { cursor: grabbing; }
+        .launcher-pill { cursor: grab; }
+        .launcher-pill:active { cursor: grabbing; }
       </style>
     `;
 
     return html`
       ${dynamicStyles}
       <div class="widget-container" style="transform: translate3d(${this.translateX}px, ${this.translateY}px, 0);">
-      <button 
-      class="launcher" 
-      @click=${this.toggleChat}
-      @pointerdown=${this.dragStart}
-      @pointermove=${this.drag}
-      @pointerup=${this.dragEnd}
-      @pointercancel=${this.dragEnd}>
-        ${this.isOpen ? '✕' : '💬'}
-      </button>
 
-      ${this.isOpen ? html`
-        <div class="chat-window">
-          <div 
-          class="header"
+        ${this.isOpen ? html`
+          <div class="chat-window">
+            <div class="messages">
+              ${this.messages.map(msg => html`
+                <div class="message ${msg.sender}">${msg.text}</div>
+              `)}
+              
+              ${this.isTyping ? html`
+                <div class="message bot typing">
+                  <div class="dot"></div>
+                  <div class="dot"></div>
+                  <div class="dot"></div>
+                </div>
+              ` : ''}
+              
+              ${this.messages.length === 1 && !this.isTyping ? html`
+                <div class="options-container">
+                  <button class="option-btn" @click=${() => this.sendOption('Quiero saber más sobre sus productos y servicios')}>Comprar/Productos</button>
+                  <button class="option-btn" @click=${() => this.sendOption('Quiero conocer mas sobre accesspark ,saber que vacantes disponibles hay')}>Trabajar con nosotros o saber más sobre accesspark</button>
+                  <button class="option-btn" @click=${() => this.sendOption('Tengo una falla en mi sistema de parqueadero y necesito soporte técnico')}>Soporte Técnico</button>
+                </div>
+              ` : ''}
+            </div>
+            <div class="input-area">
+              <input 
+                type="text" 
+                .value=${this.inputText} 
+                @input=${this.handleInput} 
+                @keypress=${this.handleKeyPress}
+                placeholder="Escribe tu mensaje..."
+              />
+              <button class="send" @click=${() => this.sendMessage()}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Pill launcher: siempre visible -->
+        <div
+          class="launcher-pill ${this.isCompact ? 'compact' : ''}"
           @pointerdown=${this.dragStart}
           @pointermove=${this.drag}
           @pointerup=${this.dragEnd}
           @pointercancel=${this.dragEnd}
-          >
-            Habla con crisIA
+          @click=${this.toggleChat}
+        >
+          <div class="pill-avatar-wrapper">
+            <img class="pill-avatar" src="${this.iconSrc}" alt="Bot" draggable="false" />
+            <span class="online-dot"></span>
           </div>
-
-          <div class="messages">
-            ${this.messages.map(msg => html`
-              <div class="message ${msg.sender}">${msg.text}</div>
-            `)}
-            
-            ${this.isTyping ? html`
-              <div class="message bot typing">
-                <div class="dot">...</div>
-              </div>
-            ` : ''}
-            
-            ${this.messages.length === 1 && !this.isTyping ? html`
-              <div class="options-container">
-                <button class="option-btn" @click=${() => this.sendOption('Quiero ver el catálogo de productos y precios')}>Comprar/Productos</button>
-                <button class="option-btn" @click=${() => this.sendOption('Quiero conocer las vacantes o trabajar con ustedes')}>Trabajar con nosotros</button>
-                <button class="option-btn" @click=${() => this.sendOption('Tengo una falla y necesito soporte técnico')}>Soporte Técnico</button>
-              </div>
-            ` : ''}
+          <div class="pill-info">
+            <span class="pill-name">${this.botName}</span>
+            <span class="pill-status">En línea</span>
           </div>
-          <div class="input-area">
-            <input 
-              type="text" 
-              .value=${this.inputText} 
-              @input=${this.handleInput} 
-              @keypress=${this.handleKeyPress}
-              placeholder="Escribe tu mensaje..."
-            />
-            <button class="send" @click=${() => this.sendMessage()}>➤</button>
-          </div>
+          <button
+            class="minimize-btn"
+            @click=${this.toggleMinimize}
+            title=${this.isOpen ? 'Minimizar chat' : 'Reducir al logo'}
+          >&#8722;</button>
         </div>
-      ` : ''}
-    </div>  
+
+      </div>  
     `;
   }
 }

@@ -1,0 +1,22 @@
+Contexto de Información Comercial, Ventas, Captación de Clientes y Portafolio Integral de AccessPark. El correo de contacto comercial es comercial@accesspark.co.
+
+Ecosistema de Software de Ventas AccessPark:
+El producto Gaston Web es la plataforma administrativa SaaS en la nube de AccessPark para configuración de reglas de negocio, tarifas, gestión de abonados y facturación electrónica integrada con ERPs como NovaSoft y WorldOffice.
+El producto Gastoncito es el servidor local de AccessPark que garantiza la operación continua del parqueadero sin internet, gestionando reglas de Anti-passback y liquidaciones locales.
+El producto Pitty Monitor es el sistema de orquestación Edge Computing de AccessPark para monitorear hardware en tiempo real, realizar aperturas remotas y auditar niveles de efectivo e insumos en cajeros.
+El producto AccessLess PARK es la solución de AccessPark basada en Inteligencia Artificial para el reconocimiento de placas (LPR) en carros y motos, permitiendo ingresos sin contacto (ticketless) y gestión de listas blancas.
+
+Portafolio de Hardware de Carril y Control de Acceso de AccessPark:
+El producto Dispensador AccessPark 2030 es un equipo de entrada con pantalla LED de 13.3" FULL HD IPS para publicidad, emisor de tiquetes térmicos o tarjetas Mifare, citofonía VoIP y controladora ParkLine V6.1 con sensores loop de doble canal.
+El producto Verificador AccessPark 2030 es un validador de salida con pantalla de 13.3" IPS, lector de tiquetes QR láser o tarjetas inteligentes, módulo de voz paso a paso y capacidad para almacenar hasta 1000 tarjetas.
+Los productos Línea 1030 y 1030Q de AccessPark son equipos de carril compactos con pantalla LCD de 4.3" y tecnología de lectura QR láser o Mifare.
+Las Barreras Vehiculares de AccessPark integran la barrera Ditec QLK7EH (uso intensivo, 1.5 millones de ciclos) con brazos de 3 a 6 metros, y la barrera Fast1 con motor sin escobillas para máxima durabilidad.
+Sistemas Complementarios de AccessPark incluyen Tótems contadores de cupos con comunicación TCP/IP, casilleros inteligentes PayKing y módulos de inventario con 4 cámaras para registro fotográfico del estado del vehículo.
+
+Portafolio de Cajeros Automáticos y Puntos de Pago de AccessPark:
+El producto Cajero Automático SmartPay 2030QR de AccessPark es una estación 24/7 con pantalla táctil de 21.5", pago con tarjeta débito/crédito (Contactless/ApplePay), reciclador de billetes y monedas, y citofonía VoIP.
+El producto Kiosco 0525 de AccessPark es una terminal exclusiva para pagos electrónicos con tarjeta y validación de convenios mediante código QR.
+Los Puntos de Pago Manuales de AccessPark incluyen AccessPay EDGE (Android 15.6") y D2S (Android 11.6") que poseen impresora térmica de 80mm, lector QR/Mifare y cajón monedero.
+
+Proceso de Cotización y Ventas de AccessPark:
+Para iniciar un proyecto comercial, el cliente potencial debe contactar al área comercial al correo comercial@accesspark.co. El cliente debe proporcionar: Nombre de empresa, contacto, tipo de proyecto (nuevo o modernización), número de carriles, tecnología de acceso deseada (LPR, QR o Tarjeta) y métodos de pago requeridos para que AccessPark estructure la oferta.

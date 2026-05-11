@@ -4,8 +4,16 @@ Logger centralizado del proyecto.
 Reemplaza todos los print() del código original con logs estructurados
 que incluyen timestamp, nivel y módulo de origen.
 """
+import io
 import logging
 import sys
+
+
+def _get_utf8_stream():
+    """Devuelve stdout con codificación UTF-8 forzada (necesario en Windows cp1252)."""
+    if hasattr(sys.stdout, "buffer"):
+        return io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    return sys.stdout
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -26,8 +34,8 @@ def get_logger(name: str) -> logging.Logger:
 
     logger.setLevel(logging.DEBUG)
 
-    # Handler que escribe en consola (stdout)
-    handler = logging.StreamHandler(sys.stdout)
+    # Handler que escribe en consola (stdout) con UTF-8 forzado
+    handler = logging.StreamHandler(_get_utf8_stream())
     handler.setLevel(logging.DEBUG)
 
     # Formato: [2026-05-01 15:30:00] INFO     app.services.chat_service — Mensaje

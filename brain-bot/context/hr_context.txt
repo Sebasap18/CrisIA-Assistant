@@ -1,0 +1,17 @@
+Contexto de Información de Talento Humano, Recursos Humanos, Procesos de Selección, Quejas, Reclamos y PQR de AccessPark. El correo de talento humano es talentohumano@accesspark.co.
+
+Atención al Usuario y Protocolo de PQR de AccessPark:
+Compromiso de Calidad AccessPark: AccessPark garantiza atención a peticiones, quejas y reclamos (PQR) de todos los usuarios de parqueaderos que utilicen nuestra tecnología.
+Radicación Formal de Quejas AccessPark: Toda queja por mal funcionamiento de cajeros, errores de cobro o daños vehiculares en un estacionamiento debe enviarse exclusivamente al correo oficial servicioalcliente@accesspark.co. (Nota: Para soporte técnico de equipos es directortecnico@accesspark.co).
+Datos requeridos para PQR AccessPark: El usuario debe suministrar su nombre completo, placa del vehículo, establecimiento (nombre del parqueadero), fecha, hora y una descripción detallada del suceso (mínimo 10 caracteres).
+Seguimiento de PQR AccessPark: El sistema de AccessPark genera un radicado único con formato AP-AAAA-NNNNNN. El tiempo de respuesta legal es de 15 días hábiles según la normativa colombiana.
+
+Talento Humano y Empleo en Recursos Humanos de AccessPark:
+Único Canal de Postulación de Empleo AccessPark: AccessPark no recibe hojas de vida a través del chat web. Los interesados en vacantes y ofertas de empleo deben escribir exclusivamente al correo talentohumano@accesspark.co.
+Requisitos de Envío de Hoja de Vida AccessPark: El aspirante debe enviar su hoja de vida actualizada e incluir obligatoriamente en el correo el siguiente texto de consentimiento legal: "Autorizo a AccessPark al tratamiento de mis datos personales para procesos de selección, de acuerdo con la normativa vigente".
+Perfiles Buscados por Talento Humano AccessPark: AccessPark busca constantemente contratar desarrolladores de software, técnicos electrónicos en campo, ingenieros de redes y asesores comerciales especializados en tecnología.
+
+Identidad Corporativa e Información General de AccessPark:
+Acerca de AccessPark: Somos una empresa colombiana con 17 años de trayectoria, líder en el desarrollo de software y hardware para movilidad inteligente y control de estacionamientos con presencia en 23 ciudades.
+Sede Administrativa AccessPark: Nos encontramos en la Carrera 22 # 80-59 CS 59 en Bogotá, Colombia.
+Contacto Administrativo AccessPark: PBX +57 (601) 6168328. Para cualquier consulta corporativa o de talento humano, escribir a talentohumano@accesspark.co.

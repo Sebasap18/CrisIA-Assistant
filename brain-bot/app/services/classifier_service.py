@@ -21,12 +21,13 @@ logger = get_logger(__name__)
 VALID_CATEGORIES = frozenset({"sales", "support", "human_talent", "general"})
 
 _CLASSIFIER_PROMPT = """\
-Actúa como un clasificador automático.
-Lee el siguiente mensaje del usuario y clasifícalo en UNA SOLA de las siguientes categorías:
-- "sales" (Si pregunta por precios, productos, ventas, dispensadores, cajeros, catálogo, si quiere comprar).
-- "support" (Si pregunta por fallas, mantenimiento, garantías, SLA, ayuda técnica).
-- "human_talent" (Si pregunta por empleo, vacantes, si tiene quejas, reclamos, PQR).
-- "general" (Si es un saludo, una despedida, o no encaja en las anteriores).
+Actúa como un enrutador inteligente para la empresa AccessPark.
+Analiza el siguiente mensaje del usuario y clasifícalo ESTRICTAMENTE en UNA de estas 4 categorías basándote en la intención:
+
+- "sales" : El usuario tiene intención comercial, quiere comprar, cotizar o saber qué hace la empresa. Palabras clave: precios, productos, servicios, catálogo, comprar, modernizar parqueadero, cajeros, barreras, dispensadores, LPR, software, Gaston, Pitty.
+- "support" : El usuario tiene un problema técnico, necesita ayuda operativa o reporta una falla. Palabras clave: fallas, error, daño, no funciona, atasco de billetes, atasco de monedas, mantenimiento, garantías, SLA, configurar, reiniciar, datáfono, timeout, no lee tarjeta, no lee QR, barrera no sube, barrera se le cae a los carros.
+- "human_talent" : El usuario busca empleo o quiere poner una queja formal. Palabras clave: empleo, trabajar, vacantes, hoja de vida, recursos humanos, quejas, reclamos, PQR, mal servicio, incumplimiento,insatisfacción, inconsistencia.
+- "general" : Si es un saludo corto (hola, buenos días), una despedida, un agradecimiento, o una pregunta que NO tiene ninguna relación con parqueaderos o AccessPark.
 
 Responde ÚNICAMENTE con la palabra exacta de la categoría, en minúsculas y sin puntos.
 
@@ -77,12 +78,12 @@ class OllamaClassifierService:
                 raw = response.json()["message"]["content"].strip().lower()
 
                 # Buscar si alguna categoría válida está contenida en la respuesta
-                for category in ("sales", "support", "human_talent"):
+                for category in VALID_CATEGORIES: # <-- Usamos el frozenset que ya tenías definido arriba
                     if category in raw:
                         logger.info("Intención detectada: '%s'", category)
                         return category
 
-                logger.info("Intención detectada: 'general' (fallback). Respuesta cruda: '%s'", raw)
+                logger.warning("Clasificación ambigua. Respuesta cruda: '%s'. Usando fallback 'general'.", raw)
                 return "general"
 
 

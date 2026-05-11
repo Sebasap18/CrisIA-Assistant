@@ -32,6 +32,14 @@ class ChromaRAGService:
         self._embed_model = settings.OLLAMA_EMBED_MODEL
         self._chroma_path = settings.CHROMA_PATH
         self._top_k = settings.RAG_TOP_K
+        
+        # Inicializar embeddings y vectorstore una sola vez para mejorar rendimiento
+        self._embeddings = OllamaEmbeddings(model=self._embed_model)
+        self._vectorstore = Chroma(
+            persist_directory=self._chroma_path,
+            embedding_function=self._embeddings,
+        )
+
 
 
     def search(self, query: str, client_id: str, department: str) -> str:
@@ -50,17 +58,17 @@ class ChromaRAGService:
             Retorna cadena vacía si no hay resultados o hay un error.
         """
         try:
-            embeddings = OllamaEmbeddings(model=self._embed_model)
-            vectorstore = Chroma(
-                persist_directory=self._chroma_path,
-                embedding_function=embeddings,
-            )
-
             # Construir el filtro de búsqueda
             filter_conditions: list[dict] = [{"client_id": client_id}]
 
             if department != "general":
-                filter_conditions.append({"deals": department})
+                # Buscar en el departamento específico O en documentos generales
+                filter_conditions.append({
+                    "$or": [
+                        {"deals": department},
+                        {"deals": "general"}
+                    ]
+                })
 
             search_filter = (
                 {"$and": filter_conditions}
@@ -75,7 +83,7 @@ class ChromaRAGService:
                 search_filter,
             )
 
-            results = vectorstore.similarity_search(
+            results = self._vectorstore.similarity_search(
                 query=query,
                 k=self._top_k,
                 filter=search_filter,
