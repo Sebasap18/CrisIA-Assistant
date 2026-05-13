@@ -11,6 +11,8 @@ Principio de Inversión de Dependencias (DIP):
   IMemoryRepository), nunca de implementaciones concretas.
   Las dependencias se inyectan en el constructor.
 """
+import json
+import re
 from sqlalchemy.orm import Session
 
 from app.domain.interfaces import (
@@ -18,6 +20,7 @@ from app.domain.interfaces import (
     ILLMService,
     IMemoryRepository,
     IRAGService,
+    INotificationService,
 )
 from app.domain.models import Client
 from app.domain.schemas import ChatRequest, ChatResponse

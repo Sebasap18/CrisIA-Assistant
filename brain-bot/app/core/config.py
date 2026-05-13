@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     # --- Ingestión de documentos ---
     INGEST_CLIENT_ID: str = "accesspark_001"
 
+    # --- Notificaciones ---
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASS: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=str(_ENV_FILE),
         env_file_encoding="utf-8",

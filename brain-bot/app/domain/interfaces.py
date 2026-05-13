@@ -86,3 +86,18 @@ class IClassifierService(Protocol):
         Clasifica el texto del usuario en una categoría basándose en la configuración dinámica.
         """
         ...
+
+
+@runtime_checkable
+class INotificationService(Protocol):
+    """
+    Contrato para el servicio de envío de notificaciones o alertas a agentes humanos.
+    """
+
+    async def send_email(self, to_email: str, subject: str, body: str) -> bool:
+        """Envía una notificación por correo electrónico."""
+        ...
+
+    async def send_whatsapp(self, to_phone: str, message: str) -> bool:
+        """Envía una notificación por WhatsApp."""
+        ...
