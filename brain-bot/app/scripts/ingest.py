@@ -7,12 +7,8 @@ Principio de Responsabilidad Única (SRP):
 
 Uso:
   python -m app.scripts.ingest
-  python -m app.scripts.ingest --client-id accesspark_001
-  INGEST_CLIENT_ID=mi_cliente python -m app.scripts.ingest
-
-El CLIENT_ID ya no está hardcodeado — se configura via:
-  1. Argumento CLI: --client-id
-  2. Variable de entorno: INGEST_CLIENT_ID (en .env o sistema)
+  python -m app.scripts.ingest --client-ids accesspark_001 gaston_admin_001
+  INGEST_CLIENT_IDS=cliente_1,cliente_2 python -m app.scripts.ingest
 """
 import argparse
 import os
@@ -48,17 +44,21 @@ _SUPPORTED_EXTENSIONS = {".pdf", ".txt"}
 
 
 def _parse_args() -> argparse.Namespace:
-    """Parsea los argumentos de línea de comandos."""
+    """Parsea los argumentos de línea de comandos para soportar múltiples clientes."""
+    # Convertimos la variable de entorno (string separado por comas) en una lista real
+    default_ids = [c_id.strip() for c_id in settings.INGEST_CLIENT_IDS.split(",") if c_id.strip()]
+
     parser = argparse.ArgumentParser(
-        description="Ingestar documentos de contexto de un cliente en ChromaDB."
+        description="Ingestar documentos de contexto para uno o varios clientes en ChromaDB."
     )
     parser.add_argument(
-        "--client-id",
+        "--client-ids",
         type=str,
-        default=settings.INGEST_CLIENT_ID,
+        nargs="+", # Permite pasar varios argumentos separados por espacio en la terminal
+        default=default_ids,
         help=(
-            f"ID del cliente a procesar. "
-            f"Por defecto: '{settings.INGEST_CLIENT_ID}' (de INGEST_CLIENT_ID en .env)"
+            f"IDs de los clientes a procesar separados por espacio. "
+            f"Por defecto: {default_ids} (extraído de INGEST_CLIENT_IDS en .env)"
         ),
     )
     return parser.parse_args()
@@ -82,16 +82,11 @@ def _load_document(file_path: str):
 
 def ingest_for_client(client_id: str) -> None:
     """
-    Ejecuta el proceso completo de ingesta para un cliente:
-      1. Consulta los documentos registrados en PostgreSQL.
-      2. Carga y fragmenta cada archivo.
-      3. Inyecta los metadatos (client_id + etiquetas de la BD).
-      4. Indexa los fragmentos en ChromaDB.
-
-    Args:
-        client_id: Identificador del cliente a procesar.
+    Ejecuta el proceso completo de ingesta para UN cliente.
     """
+    logger.info("=" * 60)
     logger.info("Iniciando ingesta para cliente: '%s'", client_id)
+    logger.info("=" * 60)
 
     db: Session = SessionLocal()
     try:
@@ -104,7 +99,7 @@ def ingest_for_client(client_id: str) -> None:
 
         if not documentos_db:
             logger.error(
-                "No se encontraron documentos en la BD para client_id='%s'.", client_id
+                "No se encontraron documentos en la BD para client_id='%s'. Saltando...", client_id
             )
             return
 
@@ -155,7 +150,7 @@ def ingest_for_client(client_id: str) -> None:
 
         # ── 4. Guardar en ChromaDB ────────────────────────────────────────────
         if not chunks_finales:
-            logger.error("No se pudo procesar ningún texto válido. Abortando.")
+            logger.error("No se pudo procesar ningún texto válido. Abortando ingesta para este cliente.")
             return
 
         logger.info("Indexando %d fragmentos totales en ChromaDB...", len(chunks_finales))
@@ -164,14 +159,25 @@ def ingest_for_client(client_id: str) -> None:
             embedding=embeddings,
             persist_directory=settings.CHROMA_PATH,
         )
-        logger.info("✅ Ingesta completada exitosamente para cliente '%s'.", client_id)
+        logger.info("✅ Ingesta completada exitosamente para cliente '%s'.\n", client_id)
 
     except Exception as exc:
-        logger.error("Error crítico durante la ingesta: %s", exc, exc_info=True)
+        logger.error("Error crítico durante la ingesta del cliente '%s': %s", client_id, exc, exc_info=True)
     finally:
         db.close()
 
 
 if __name__ == "__main__":
     args = _parse_args()
-    ingest_for_client(client_id=args.client_id)
+    
+    if not args.client_ids:
+        logger.error("No se proporcionó ningún client_id para procesar.")
+        sys.exit(1)
+        
+    logger.info("Se procesarán los siguientes clientes: %s", args.client_ids)
+    
+    # Iteramos la lista procesando cliente por cliente
+    for c_id in args.client_ids:
+        ingest_for_client(client_id=c_id)
+        
+    logger.info("🎉 Proceso de ingesta global finalizado.")

@@ -1,0 +1,19 @@
+Contexto Administrativo: Módulo de Reportes, Cierres de Caja y Estadísticas en Gaston Web.
+
+Filtros Generales de Reportes en Gaston Web:
+Para generar informes en Gaston Web, el usuario debe ir al menú lateral izquierdo "Reportes". Todo reporte exige filtrar obligatoriamente por "Empresa" (Nombre del estacionamiento) y un rango de "Fecha de inicio" y "Fecha de fin". La mayoría de los informes de Gaston Web son exportables a formato Excel (.xlsx) y algunos a PDF.
+
+Reportes de Operación Monetaria y Facturación en Gaston Web:
+El reporte "Consolidado de facturación por estación" de Gaston Web muestra día por día los ingresos unificados, detallando sub-totales por parqueadero, mensualidades, casilleros, tiquetes perdidos, misceláneos e impuestos, divididos en Pago Electrónico y Efectivo.
+El reporte "Detallado de facturación por conceptos" de Gaston Web muestra cada factura individual (Prefijo, Número de factura, Fecha, Subtotal, Impuesto, Método de pago y Usuario de liquidación). En este reporte se puede imprimir una "Copia de factura" en PDF dando clic en el botón "Copia".
+El reporte "Cierres de Caja" de Gaston Web permite auditar turnos. Muestra el Usuario, Estación, Hora de inicio y cierre, "Base de caja" (dinero inicial), "Reportado" (dinero declarado por el cajero), "Dinero en caja" (sistema) y la "Diferencia" (descuadre).
+El reporte "Comprobante de Informe Diario" de Gaston Web resume las ventas por día del parqueadero y recaudo por punto de pago.
+
+Reportes de Estadísticas y Movimientos en Gaston Web:
+El reporte "Movimientos de Rotación" de Gaston Web detalla cada ingreso de vehículos visitantes. Muestra Id Consecutivo, Fecha de Ingreso, Fecha de Salida, Sitio de Entrada, Sitio de Salida y la Placa de Ingreso digitalizada por LPR. Al hacer clic en el botón "Detalles" se visualiza el subtotal, impuesto y descuentos aplicados.
+El reporte "Reporte Frecuencia" de Gaston Web muestra el flujo de entradas (IN) y salidas (OUT) en rangos de 15 min, 30 min, 1 hora, 2 horas o 4 horas para identificar horas pico.
+El reporte "Reporte Ocupación" de Gaston Web muestra la cantidad de vehículos físicos en el estacionamiento en un rango de tiempo. Si hay vehículos "atrapados" en sistema sin salida física, la estadística de ocupación se verá afectada.
+El reporte "Reporte de Registros Purgados" de Gaston Web muestra los movimientos vehiculares que fueron eliminados (purgados) del sistema, indicando la fecha de purga y el "Usuario de purga".
+
+Gestión de Descuentos y Productos en Gaston Web:
+El reporte "Resumen Descuentos" de Gaston Web permite auditar cortesías. En el filtro "Tipo de descuento", elija "Siempre" para descuentos manuales en caja, o "Ocasional" para descuentos por lectura de códigos QR. Muestra el Total descontado y la Cantidad de descuentos aplicados por usuarios.

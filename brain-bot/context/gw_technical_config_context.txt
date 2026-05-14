@@ -1,0 +1,20 @@
+Contexto Técnico: Configuración de Dispositivos, Pitty Monitor y Alertas en Gaston Web.
+
+Acceso y Entorno del Sistema Gaston:
+El sistema Gaston Web en la nube se accede desde la URL https://accesspay.pro/view/login para la gestión administrativa. El sistema local, llamado Gastoncito, se accede mediante la URL http://gaston/view/login. Pitty Monitor actúa como el cerebro local (Edge Computing) integrado en Gastoncito, comunicándose con barreras, dispensadores y cámaras LPR en modo offline.
+
+Configuración de Sub-Lotes en Gaston Web:
+Para crear un sub-lote en Gaston Web, ingrese a Configuración > Abonados > Configuración de ingreso. En la creación de Sub-lote se debe asignar el "Lote padre", el "Cupo total", y seleccionar en Tipo de espacio la opción "Control sub-lote". Es obligatorio definir el "Tiempo de paso de lote principal a sub-lote" (tiempo de gracia) y marcar "Obliga pago" si el usuario debe pagar una multa en caso de exceder el tiempo de traslado entre lotes. Si se marca "Omitir antipassback", los VIP y mensuales entran y salen sin restricción.
+
+Configuración de Controladoras en Gaston Web:
+En Gaston Web, para agregar una tarjeta controladora, vaya a Dispositivos > Agregar dispositivo. Elija "Tarjeta controladora", asígnele un nombre y marque Estado Activo. La IP debe ser la configurada en el equipo Tibbo, el Puerto por defecto es 6003, y la velocidad (Baudrate) debe ser 115200 bps. El canal 1 debe estar configurado como "Cliente". 
+
+Configuración de Cámaras LPR en Gaston Web:
+Para configurar cámaras LPR Vivotek en Gaston Web, elija fabricante VIVOTEK e ingrese la IP. El tipo de integración es "Por puerto" y cada cámara debe tener un puerto de entrada y salida diferente para evitar conflictos. Usuario por defecto: admin, Clave: 901215958ap.
+Para configurar cámaras LPR Hikvision en Gaston Web, elija fabricante HIKVISION. El tipo de integración es "Por API" y los puertos de entrada y salida se asignan siempre con el número 0. Usuario por defecto: admin, Clave: 901215958ap.
+Para configurar cámaras de Inventario en Gaston Web, la URL cambia por marca. Revotech usa el puerto 6688 (/snapshot/PROFILE_000). Hikvision usa ISAPI (/ISAPI/Streaming/channels/1/picture). Dahua usa cgi-bin (/cgi-bin/snapshot.cgi). Tras cualquier cambio de IP, se debe reiniciar el servicio "pitty-talk".
+
+Gestión de Alertas y Pitty Monitor:
+En Pitty Monitor, el Panel de Monitoreo permite gestionar alertas de "No placa" o "Placa no coincide". El monitorista puede dar doble clic en la imagen LPR para ampliarla. Para corregirla, hace clic en "Agregar placa a la transacción", digita la placa real y guarda.
+Si una carretilla o peatón activa el sensor y genera una falsa alerta en Pitty Monitor, el operador debe hacer clic en "Descartar alerta" y seleccionar la causa del descarte.
+Pitty Monitor también permite realizar la "Apertura remota de barreras". En el menú "Estado de máquinas", ubique la barrera de entrada o salida y seleccione el botón "Apertura Manual".

@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     HISTORY_MAX_TURNS: int = 6
 
     # --- Ingestión de documentos ---
-    INGEST_CLIENT_ID: str = "accesspark_001"
+    INGEST_CLIENT_IDS: str = "accesspark_001,accesspark_002"
 
     # --- Notificaciones ---
     SMTP_HOST: str = "smtp.gmail.com"

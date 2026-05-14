@@ -1,0 +1,25 @@
+Contexto Operativo: Cobros en Caja Web, AccessPay EDGE, Mensualidades y FlyPass.
+
+Inicio de Turno y Login en AccessPay EDGE (Caja Web):
+Para iniciar operaciones en la terminal AccessPay EDGE, el cajero abre la aplicación ingresando su correo/identificación y contraseña. Al ingresar al "Módulo de pago" para abrir turno, el sistema solicita ingresar el "Dinero base caja". Si no se maneja base, se debe digitar "0" y hacer clic en "Enviar".
+
+Cobro de Rotación y Aplicación de Descuentos en Caja Web:
+En el Módulo de Pago de AccessPay EDGE, el cobro se inicia escribiendo la placa en el buscador o leyendo el tiquete QR / Tarjeta Mifare.
+Para aplicar una cortesía, el cajero selecciona el botón "Agregar descuentos", elige el convenio autorizado y presiona "Aplicar Descuento".
+Para finalizar la venta, presiona el botón "Caja". El sistema pregunta "¿Deseas imprimir tu factura?" (Sí/No) y procesa la transacción, mostrando el cambio a devolver.
+
+Pago con Medios Electrónicos (Datáfono CredibanCo) en Caja Web:
+La terminal AccessPay EDGE está integrada con datáfonos Android CredibanCo N86. Al seleccionar "Pago en tarjeta débito y crédito", el sistema envía el cobro al datáfono y el estado cambia a "CREADA". El cliente desliza, inserta o acerca (Contactless) su tarjeta en el datáfono. Al aprobarse, el estado en la caja pasa a "COMPLETADA".
+Si el pago electrónico excede el TimeOut de 4 minutos, aparecerá el error "Timeout. Debe anular la transacción". El cajero debe presionar "Transacción anulada en datáfono" y borrarla manualmente en el dispositivo CredibanCo para liberar el sistema.
+
+Gestión de Abonados y Mensualidades en Caja Web:
+Existen 4 tipos de abonados en Gaston Web: Locatario, Mensual, Prepago y VIP. Adicionalmente, el tipo "Postpago" se crea con 0 horas disponibles y permite ingresar sin restricción, para luego liquidar el tiempo consumido.
+Para renovar una mensualidad en AccessPay EDGE, se va a "Pago abonado", se busca por placa o cédula, se selecciona el servicio vencido y se da clic en "Renovar". (Nota: No se pueden renovar servicios en $0 o cuentas VIP). Si el abono tiene la opción "Prorrateo", el sistema calcula el cobro basado en la fórmula: (Valor_Mensualidad / 30_días) * días_restantes hasta la fecha de corte.
+
+Integración Gaston con FlyPass:
+En los ingresos, Pitty Monitor lee la placa. Si no es abonado, envía la placa a la API de FlyPass. Si FlyPass responde "Autorizado", el ingreso se marca como FlyPass; si es "Denegada", entra como Rotación normal.
+Al salir, el cajero digita la placa en AccessPay EDGE. Si el ingreso fue por FlyPass, aparecerá el logo de FlyPass en la pantalla. Se pueden aplicar descuentos manuales; el cobro final se descuenta automáticamente del saldo de FlyPass al abrir la barrera de salida.
+
+Facturación Electrónica y Cierre de Caja en AccessPay EDGE:
+En el proceso de cobro de AccessPay EDGE, al ir a "Caja", el cajero puede seleccionar el tipo de documento para la factura electrónica (CC, NIT, CE, RUT, Pasaporte). Al digitar el documento y dar clic en "Validar documento", el sistema verifica en la base de datos de Gaston. Si el cliente no desea dar datos, se usa el botón "Usuario Genérico".
+Para finalizar el turno, el cajero ingresa a "Cierre de caja", digita el total del dinero en efectivo de la gaveta, y el sistema imprime el tiquete de "Cierre ciego" mostrando los faltantes o sobrantes ("Diferencia").
